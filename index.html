@@ -1,206 +1,212 @@
 <!DOCTYPE html>
 <html lang="ur">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Quran AI Assistant</title>
-    <style>
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: #020617;
-            color: white;
-            text-align: center;
-            padding: 40px;
-        }
+  <meta charset="UTF-8">
+  <title>Quran AI Search</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial;
+      background: #020617;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
 
-        h1 { font-size: 36px; margin-bottom: 30px; color: #3b82f6; }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
 
-        .search-box {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 15px;
-            display: inline-block;
-            margin-bottom: 40px;
-        }
+    input {
+      padding: 14px;
+      width: 320px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
 
-        input {
-            padding: 14px;
-            width: 350px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: 2px solid #334155;
-            background: #0f172a;
-            color: white;
-            outline: none;
-        }
+    button {
+      padding: 14px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      margin-left: 6px;
+    }
 
-        button.search-btn {
-            padding: 14px 25px;
-            font-size: 18px;
-            border: none;
-            border-radius: 8px;
-            background: #2563eb;
-            color: white;
-            cursor: pointer;
-            margin-left: 10px;
-            transition: 0.3s;
-        }
+    button:hover {
+      background: #1d4ed8;
+    }
 
-        button.search-btn:hover { background: #1d4ed8; transform: scale(1.05); }
+    #results {
+      margin-top: 40px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
 
-        #results { max-width: 800px; margin: auto; text-align: right; }
+    .card {
+      background: #0f172a;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
 
-        .card {
-            background: #0f172a;
-            padding: 30px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            border: 1px solid #1e293b;
-        }
+    .info {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
 
-        .info { color: #64748b; font-size: 14px; margin-bottom: 15px; text-align: left; }
+    .arabic {
+      font-size: 36px;
+      direction: rtl;
+      line-height: 2;
+      margin-bottom: 15px;
+      color: #f8fafc;
+    }
 
-        .arabic {
-            font-size: 32px;
-            direction: rtl;
-            line-height: 1.8;
-            margin-bottom: 20px;
-            color: #f8fafc;
-            font-family: "Traditional Arabic", serif;
-        }
+    .urdu {
+      font-size: 20px;
+      direction: rtl;
+      line-height: 1.8;
+      color: #93c5fd;
+      margin-bottom: 15px;
+    }
 
-        .urdu {
-            font-size: 20px;
-            direction: rtl;
-            line-height: 1.6;
-            color: #93c5fd;
-            margin-bottom: 20px;
-            border-top: 1px solid #1e293b;
-            padding-top: 15px;
-        }
+    .audio {
+      margin-bottom: 10px;
+    }
 
-        /* The Explanation Button */
-        .explain-btn {
-            background: transparent;
-            border: 1px solid #3b82f6;
-            color: #3b82f6;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
-            transition: 0.2s;
-        }
+    .aiBox {
+      background: #052e16;
+      padding: 12px;
+      border-left: 4px solid #22c55e;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
 
-        .explain-btn:hover { background: #3b82f6; color: white; }
+    .loader {
+      border: 4px solid #333;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
 
-        .aiBox {
-            background: #064e3b;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            line-height: 1.6;
-            color: #dcfce7;
-            font-size: 16px;
-            display: none; /* Hidden until clicked */
-            text-align: left;
-            border-left: 4px solid #10b981;
-        }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
 
-        .loader {
-            border: 4px solid #1e293b;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <h1>قرآن سرچ</h1>
+  <input id="topic" placeholder="مثلاً زکاة، روزہ، صبر">
+  <button onclick="searchTopic()">تلاش کریں</button>
 
-    <h1>قرآن اے آئی اسسٹنٹ</h1>
+  <div id="results"></div>
 
-    <div class="search-box">
-        <input id="topic" placeholder="موضوع درج کریں (مثلاً صبر، زکوٰۃ)">
-        <button class="search-btn" onclick="searchTopic()">تلاش کریں</button>
-    </div>
+  <script>
+    async function searchTopic() {
+      let topic = document.getElementById("topic").value;
+      let container = document.getElementById("results");
 
-    <div id="results"></div>
+      if (!topic) return;
 
-    <script>
-        async function searchTopic() {
-            let topic = document.getElementById("topic").value;
-            let container = document.getElementById("results");
-            
-            if(!topic) return alert("براہ کرم کوئی لفظ لکھیں");
+      container.innerHTML = '<div class="loader"></div>';
 
-            container.innerHTML = '<div class="loader"></div>';
+      // Search API (currently searches English words)
+      let url = `https://api.alquran.cloud/v1/search/${topic}/all/en`;
 
-            // Fetching verses from Quran API
-            let url = `https://api.alquran.cloud/v1/search/${topic}/all/en`;
-            let res = await fetch(url);
-            let data = await res.json();
+      try {
+        let res = await fetch(url);
+        let data = await res.json();
+        container.innerHTML = "";
 
-            container.innerHTML = "";
+        data.data.matches.slice(0, 5).forEach((ayah, index) => {
+          let card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="info">
+              سورۃ ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})
+            </div>
 
-            if (data.data.matches.length === 0) {
-                container.innerHTML = "<p>کوئی نتیجہ نہیں ملا۔</p>";
-                return;
-            }
+            <div class="arabic">
+              ${ayah.text}
+            </div>
 
-            data.data.matches.slice(0, 5).forEach((ayah, index) => {
-                let card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <div class="info">Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})</div>
-                    <div class="arabic">${ayah.text}</div>
-                    <div class="urdu" id="urdu${index}">ترجمہ لوڈ ہو رہا ہے...</div>
-                    <button class="explain-btn" onclick="explain('${ayah.text.replace(/'/g, "\\'")}', ${index})">
-                        AI تشریح (Summary)
-                    </button>
-                    <div class="aiBox" id="ai${index}"></div>
-                `;
-                container.appendChild(card);
-                loadUrdu(ayah.number, index);
-            });
-        }
+            <div class="urdu" id="urdu${index}">
+              ترجمہ لوڈ ہو رہا ہے...
+            </div>
 
-        async function loadUrdu(number, index) {
-            let url = `https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`;
-            let res = await fetch(url);
-            let data = await res.json();
-            document.getElementById("urdu" + index).innerText = data.data.text;
-        }
+            <div class="audio">
+              <audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3"></audio>
+            </div>
 
-        async function explain(ayahText, index) {
-            let topic = document.getElementById("topic").value;
-            let box = document.getElementById("ai" + index);
-            
-            box.style.display = "block";
-            box.innerHTML = "AI تجزیہ کر رہا ہے...";
+            <button onclick="explain('${ayah.text}',${index})">
+              تشریح
+            </button>
 
-            try {
-                let res = await fetch("/api/explain", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        topic: topic, 
-                        ayah: ayahText 
-                    })
-                });
+            <div class="aiBox" id="ai${index}"></div>
+          `;
 
-                let data = await res.json();
-                // We remove any markdown bolding stars the AI might send
-                box.innerHTML = data.explanation.replace(/\*\*/g, ""); 
-            } catch (e) {
-                box.innerHTML = "نیٹ ورک کا مسئلہ ہے۔ دوبارہ کوشش کریں۔";
-            }
-        }
-    </script>
+          container.appendChild(card);
+          loadUrdu(ayah.number, index);
+        });
+      } catch (err) {
+        container.innerHTML = "کچھ غلط ہو گیا، دوبارہ کوشش کریں۔";
+        console.error(err);
+      }
+    }
+
+    async function loadUrdu(number, index) {
+      let url = `https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`;
+
+      try {
+        let res = await fetch(url);
+        let data = await res.json();
+        document.getElementById("urdu" + index).innerText = data.data.text;
+      } catch (err) {
+        document.getElementById("urdu" + index).innerText = "ترجمہ لوڈ نہیں ہو سکا۔";
+        console.error(err);
+      }
+    }
+
+    async function explain(text, index) {
+      let box = document.getElementById("ai" + index);
+      box.innerHTML = "تشریح آ رہی ہے...";
+
+      try {
+        let res = await fetch("/api/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ayah: text })
+        });
+
+        let data = await res.json();
+        box.innerHTML = data.explanation;
+      } catch (err) {
+        box.innerHTML = "تشریح حاصل نہیں ہو سکی۔";
+        console.error(err);
+      }
+    }
+  </script>
 </body>
+
 </html>
