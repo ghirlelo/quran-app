@@ -1,34 +1,40 @@
-// api/explain.js
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  // 1. Get the topic from the frontend
+  const { topic } = req.body;
 
-  const { ayah } = req.body;
-  if (!ayah) return res.status(400).json({ error: "Ayah is required" });
+  // 2. Check if the API key is actually there
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+      return res.status(500).json({ explanation: "Error: API Key is missing in Vercel settings." });
+  }
 
   try {
+    // 3. Call OpenAI directly (No libraries needed!)
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-3.5-turbo",
         messages: [
-          { role: "user", content: `Explain this Quran verse simply in Urdu: ${ayah}` }
+          { role: "system", content: "You are a helpful assistant explaining Quranic concepts clearly." },
+          { role: "user", content: `Explain the concept of ${topic} in the Quran.` }
         ]
       })
     });
 
     const data = await response.json();
-    const explanation = data.choices[0].message.content;
+    
+    // 4. Send the answer back to your website
+    if (data.choices && data.choices[0]) {
+        res.status(200).json({ explanation: data.choices[0].message.content });
+    } else {
+        res.status(500).json({ explanation: "OpenAI returned an empty response. Check your credits." });
+    }
 
-    res.status(200).json({ explanation });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to get explanation" });
+  } catch (error) {
+    res.status(500).json({ explanation: "Server Error: " + error.message });
   }
 }
