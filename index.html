@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quran Assistant</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { color: #2c3e50; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #219150; }
+        #result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-left: 5px solid #27ae60; display: none; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Quran Assistant</h1>
+    <p>Ask about a topic (e.g., Zakat, Patience, Fasting):</p>
+    <input type="text" id="topicInput" placeholder="Enter topic here...">
+    <button onclick="getAIExplanation()">Ask AI</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    async function getAIExplanation() {
+        const topic = document.getElementById('topicInput').value;
+        const resultDiv = document.getElementById('result');
+        
+        if (!topic) return alert("Please enter a topic");
+
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = "<em>Thinking...</em>";
+
+        try {
+            // This calls the api/explain.js file you created earlier
+            const response = await fetch('/api/explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: topic })
+            });
+            const data = await response.json();
+            resultDiv.innerHTML = data.explanation;
+        } catch (error) {
+            resultDiv.innerHTML = "Error: Could not reach the AI. Make sure you set your API Key in Vercel.";
+        }
+    }
+</script>
+
+</body>
+</html>
