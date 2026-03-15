@@ -7,7 +7,7 @@
 <style>
 
 body{
-font-family:Arial;
+font-family: "Segoe UI", Arial;
 background:#020617;
 color:white;
 text-align:center;
@@ -15,80 +15,82 @@ padding:40px;
 }
 
 h1{
+font-size:34px;
 margin-bottom:20px;
 }
 
 input{
 padding:14px;
-width:300px;
+width:320px;
 font-size:16px;
 border-radius:8px;
 border:none;
 }
 
 button{
-padding:14px 20px;
+padding:14px 18px;
 font-size:16px;
 border:none;
 border-radius:8px;
 background:#2563eb;
 color:white;
 cursor:pointer;
-margin-left:5px;
+margin-left:6px;
 }
 
 button:hover{
 background:#1d4ed8;
 }
 
-.topics button{
-margin:5px;
-background:#16a34a;
-}
-
 #results{
 margin-top:40px;
 max-width:900px;
-margin-left:auto;
-margin-right:auto;
+margin:auto;
 text-align:left;
 }
 
 .card{
 background:#0f172a;
-padding:20px;
-border-radius:10px;
-margin-bottom:20px;
-box-shadow:0 0 10px rgba(0,0,0,0.3);
-}
-
-.arabic{
-font-size:28px;
-direction:rtl;
-margin-bottom:10px;
-}
-
-.urdu{
-font-size:18px;
-direction:rtl;
-color:#93c5fd;
-margin-bottom:10px;
+padding:25px;
+border-radius:12px;
+margin-bottom:25px;
+box-shadow:0 0 12px rgba(0,0,0,0.4);
 }
 
 .info{
+color:#94a3b8;
 font-size:14px;
-color:#cbd5f5;
 margin-bottom:10px;
 }
 
-.ai{
-margin-top:10px;
-color:#a7f3d0;
+.arabic{
+font-size:34px;
+direction:rtl;
+line-height:2;
+margin-bottom:15px;
+color:#f8fafc;
 }
 
-audio{
-width:100%;
+.urdu{
+font-size:20px;
+direction:rtl;
+line-height:1.8;
+color:#93c5fd;
+margin-bottom:15px;
+}
+
+.audio{
 margin-top:10px;
+margin-bottom:10px;
+}
+
+.aiBox{
+background:#022c22;
+padding:15px;
+border-radius:8px;
+margin-top:15px;
+line-height:1.6;
+color:#bbf7d0;
 }
 
 .loader{
@@ -106,32 +108,34 @@ margin:auto;
 100%{transform:rotate(360deg);}
 }
 
+@media(max-width:600px){
+
+input{
+width:100%;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+margin-top:10px;
+}
+
+}
+
 </style>
 
 </head>
 
 <body>
 
-<h1>AI Quran Topic Search</h1>
+<h1>AI Quran Search</h1>
 
-<input id="topic" placeholder="Ask about zakat, roza, prayer">
+<input id="topic" placeholder="Ask about zakat, roza, patience, charity">
 <button onclick="searchTopic()">Search</button>
-
-<div class="topics">
-<button onclick="quick('zakat')">Zakat</button>
-<button onclick="quick('fasting')">Roza</button>
-<button onclick="quick('prayer')">Namaz</button>
-<button onclick="quick('charity')">Charity</button>
-</div>
 
 <div id="results"></div>
 
 <script>
-
-function quick(word){
-document.getElementById("topic").value = word
-searchTopic()
-}
 
 async function searchTopic(){
 
@@ -144,7 +148,6 @@ container.innerHTML='<div class="loader"></div>'
 let url=`https://api.alquran.cloud/v1/search/${topic}/all/en`
 
 let res=await fetch(url)
-
 let data=await res.json()
 
 container.innerHTML=""
@@ -165,23 +168,40 @@ Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})
 ${ayah.text}
 </div>
 
-<div class="urdu">
-${ayah.translation || ""}
+<div class="urdu" id="urdu${index}">
+Loading Urdu translation...
+</div>
+
+<div class="audio">
+<audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3"></audio>
 </div>
 
 <button onclick="explain('${ayah.text}',${index})">
-Explain AI
+AI Explanation
 </button>
 
-<div class="ai" id="ai${index}"></div>
-
-<audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3"></audio>
+<div class="aiBox" id="ai${index}">
+</div>
 
 `
 
 container.appendChild(card)
 
+loadUrdu(ayah.number,index)
+
 })
+
+}
+
+async function loadUrdu(number,index){
+
+let url=`https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`
+
+let res=await fetch(url)
+
+let data=await res.json()
+
+document.getElementById("urdu"+index).innerText=data.data.text
 
 }
 
