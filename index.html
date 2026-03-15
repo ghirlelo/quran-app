@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<title>AI Quran Search</title>
+<title>Quran AI Search</title>
 
 <style>
 
@@ -15,7 +15,7 @@ padding:40px;
 }
 
 h1{
-font-size:34px;
+font-size:32px;
 margin-bottom:20px;
 }
 
@@ -64,7 +64,7 @@ margin-bottom:10px;
 }
 
 .arabic{
-font-size:34px;
+font-size:36px;
 direction:rtl;
 line-height:2;
 margin-bottom:15px;
@@ -80,7 +80,6 @@ margin-bottom:15px;
 }
 
 .audio{
-margin-top:10px;
 margin-bottom:10px;
 }
 
@@ -108,30 +107,16 @@ margin:auto;
 100%{transform:rotate(360deg);}
 }
 
-@media(max-width:600px){
-
-input{
-width:100%;
-margin-bottom:10px;
-}
-
-button{
-width:100%;
-margin-top:10px;
-}
-
-}
-
 </style>
 
 </head>
 
 <body>
 
-<h1>AI Quran Search</h1>
+<h1>قرآن سرچ</h1>
 
-<input id="topic" placeholder="Ask about zakat, roza, patience, charity">
-<button onclick="searchTopic()">Search</button>
+<input id="topic" placeholder="مثلاً زکاة، روزہ، صبر">
+<button onclick="searchTopic()">تلاش کریں</button>
 
 <div id="results"></div>
 
@@ -148,6 +133,7 @@ container.innerHTML='<div class="loader"></div>'
 let url=`https://api.alquran.cloud/v1/search/${topic}/all/en`
 
 let res=await fetch(url)
+
 let data=await res.json()
 
 container.innerHTML=""
@@ -161,7 +147,7 @@ card.className="card"
 card.innerHTML=`
 
 <div class="info">
-Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})
+سورۃ ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})
 </div>
 
 <div class="arabic">
@@ -169,7 +155,7 @@ ${ayah.text}
 </div>
 
 <div class="urdu" id="urdu${index}">
-Loading Urdu translation...
+ترجمہ لوڈ ہو رہا ہے...
 </div>
 
 <div class="audio">
@@ -177,11 +163,10 @@ Loading Urdu translation...
 </div>
 
 <button onclick="explain('${ayah.text}',${index})">
-AI Explanation
+تشریح
 </button>
 
-<div class="aiBox" id="ai${index}">
-</div>
+<div class="aiBox" id="ai${index}"></div>
 
 `
 
@@ -209,7 +194,7 @@ async function explain(text,index){
 
 let box=document.getElementById("ai"+index)
 
-box.innerHTML="AI explaining..."
+box.innerHTML="تشریح آ رہی ہے..."
 
 let res=await fetch("/api/explain",{
 
