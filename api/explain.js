@@ -1,37 +1,29 @@
 export default async function handler(req, res) {
-  // 1. Get the topic from the frontend
   const { topic } = req.body;
+  const apiKey = process.env.GEMINI_API_KEY;
 
-  // 2. Check if the API key is actually there
-  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-      return res.status(500).json({ explanation: "Error: API Key is missing in Vercel settings." });
+      return res.status(500).json({ explanation: "Error: Gemini API Key is missing." });
   }
 
   try {
-    // 3. Call OpenAI directly (No libraries needed!)
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // This calls Google's Gemini Pro model for FREE
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "You are a helpful assistant explaining Quranic concepts clearly." },
-          { role: "user", content: `Explain the concept of ${topic} in the Quran.` }
-        ]
+        contents: [{
+          parts: [{ text: `Explain the Quranic concept of ${topic} clearly for a student.` }]
+        }]
       })
     });
 
     const data = await response.json();
     
-    // 4. Send the answer back to your website
-    if (data.choices && data.choices[0]) {
-        res.status(200).json({ explanation: data.choices[0].message.content });
+    if (data.candidates && data.candidates[0].content.parts[0].text) {
+        res.status(200).json({ explanation: data.candidates[0].content.parts[0].text });
     } else {
-        res.status(500).json({ explanation: "OpenAI returned an empty response. Check your credits." });
+        res.status(500).json({ explanation: "Gemini didn't return an answer. Check your key." });
     }
 
   } catch (error) {
