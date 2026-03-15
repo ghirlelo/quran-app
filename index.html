@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>قرآن سرچ</title>
+  <title>Quran AI Search</title>
   <style>
     body {
       font-family: "Segoe UI", Arial;
@@ -46,7 +46,7 @@
       max-width: 900px;
       margin-left: auto;
       margin-right: auto;
-      text-align: right;
+      text-align: left;
     }
 
     .card {
@@ -131,7 +131,7 @@
 
       container.innerHTML = '<div class="loader"></div>';
 
-      // Search using English API (you can later improve for full Arabic/Urdu)
+      // Search API (currently searches English words)
       let url = `https://api.alquran.cloud/v1/search/${topic}/all/en`;
 
       try {
@@ -144,7 +144,7 @@
           card.className = "card";
           card.innerHTML = `
             <div class="info">
-              سورة ${ayah.surah.name} (${ayah.numberInSurah})
+              سورۃ ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})
             </div>
 
             <div class="arabic">
