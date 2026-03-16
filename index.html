@@ -6,13 +6,12 @@
     <style>
         body { font-family: "Segoe UI", Arial; background: #020617; color: white; text-align: center; padding: 40px; }
         h1 { font-size: 32px; margin-bottom: 20px; color: #3b82f6; }
-        .search-box { background: #0f172a; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 30px; }
+        .search-box { background: #0f172a; padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 30px; border: 1px solid #1e293b; }
         input { padding: 14px; width: 320px; font-size: 16px; border-radius: 8px; border: none; outline: none; background: #1e293b; color: white; }
         button.search-btn { padding: 14px 20px; font-size: 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; margin-left: 10px; }
         #results { max-width: 850px; margin: auto; text-align: right; }
-        .card { background: #0f172a; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #1e293b; }
+        .card { background: #0f172a; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #1e293b; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .info { color: #94a3b8; font-size: 14px; margin-bottom: 15px; text-align: left; }
-        /* Arabic is now the focal point at the top */
         .arabic { font-size: 36px; direction: rtl; line-height: 1.8; margin-bottom: 20px; color: #f8fafc; font-family: "Traditional Arabic", serif; text-align: center; }
         .urdu { font-size: 20px; direction: rtl; line-height: 1.6; color: #93c5fd; margin-bottom: 15px; border-top: 1px solid #1e293b; padding-top: 15px; }
         .explain-btn { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
@@ -35,62 +34,77 @@
 
     <script>
         async function searchTopic() {
-            let topic = document.getElementById("topic").value;
-            let container = document.getElementById("results");
-            if (!topic) return;
+            const topic = document.getElementById("topic").value;
+            const container = document.getElementById("results");
+            if (!topic) return alert("Please enter a topic.");
 
             container.innerHTML = '<div class="loader"></div>';
 
-            // Fetching from Quran API
-            let url = `https://api.alquran.cloud/v1/search/${topic}/all/en.sahih`;
-            let res = await fetch(url);
-            let data = await res.json();
+            try {
+                // Al Quran Cloud API Search
+                const res = await fetch(`https://api.alquran.cloud/v1/search/${topic}/all/en.sahih`);
+                const data = await res.json();
 
-            container.innerHTML = "";
+                if (!data.data || data.data.matches.length === 0) {
+                    container.innerHTML = "<p>کوئی نتیجہ نہیں ملا۔</p>";
+                    return;
+                }
 
-            data.data.matches.slice(0, 5).forEach((ayah, index) => {
-                let card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <div class="info">Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})</div>
-                    <div class="arabic">${ayah.text}</div>
-                    <div class="urdu" id="urdu${index}">ترجمہ لوڈ ہو رہا ہے...</div>
-                    
-                    <div class="audio" style="margin-top:15px;">
-                        <audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3" style="width:100%"></audio>
-                    </div>
+                container.innerHTML = "";
+                data.data.matches.slice(0, 5).forEach((ayah, index) => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <div class="info">Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})</div>
+                        <div class="arabic">${ayah.text}</div>
+                        <div class="urdu" id="urdu${index}">ترجمہ لوڈ ہو رہا ہے...</div>
+                        
+                        <div class="audio" style="margin-top:15px;">
+                            <audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3" style="width:100%"></audio>
+                        </div>
 
-                    <button class="explain-btn" onclick="explain('${ayah.text.replace(/'/g, "\\'")}', ${index})">
-                        AI خلاصہ (Summary)
-                    </button>
-                    <div class="aiBox" id="ai${index}"></div>
-                `;
-                container.appendChild(card);
-                loadUrdu(ayah.number, index);
-            });
+                        <button class="explain-btn" onclick="explain('${ayah.text.replace(/'/g, "\\'")}', ${index})">
+                            AI خلاصہ (Summary)
+                        </button>
+                        <div class="aiBox" id="ai${index}"></div>
+                    `;
+                    container.appendChild(card);
+                    loadUrdu(ayah.number, index);
+                });
+            } catch (err) {
+                container.innerHTML = "<p>سرور سے رابطہ نہیں ہو سکا۔</p>";
+                console.error(err);
+            }
         }
 
         async function loadUrdu(number, index) {
-            let res = await fetch(`https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`);
-            let data = await res.json();
-            document.getElementById("urdu" + index).innerText = data.data.text;
+            try {
+                const res = await fetch(`https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`);
+                const data = await res.json();
+                document.getElementById("urdu" + index).innerText = data.data.text;
+            } catch (err) {
+                document.getElementById("urdu" + index).innerText = "ترجمہ لوڈ نہیں ہو سکا۔";
+            }
         }
 
         async function explain(ayahText, index) {
-            let topic = document.getElementById("topic").value;
-            let box = document.getElementById("ai" + index);
+            const topic = document.getElementById("topic").value;
+            const box = document.getElementById("ai" + index);
             box.style.display = "block";
             box.innerHTML = "AI خلاصہ تیار کر رہا ہے...";
 
-            let res = await fetch("/api/explain", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: topic, ayah: ayahText })
-            });
+            try {
+                const res = await fetch("/api/explain", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topic: topic, ayah: ayahText })
+                });
 
-            let data = await res.json();
-            // Remove markdown symbols before displaying
-            box.innerHTML = data.explanation.replace(/\*\*/g, "");
+                const data = await res.json();
+                box.innerHTML = data.explanation.replace(/\*\*/g, "");
+            } catch (err) {
+                box.innerHTML = "خلاصہ حاصل کرنے میں دشواری ہو رہی ہے۔";
+            }
         }
     </script>
 </body>
