@@ -1,43 +1,34 @@
 export default async function handler(req, res) {
-  const { topic, ayah } = req.body;
+  const { topic } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
-  // Verify API Key exists
-  if (!apiKey) {
-    return res.status(500).json({ explanation: "Error: GEMINI_API_KEY is missing in Vercel settings." });
-  }
+  if (!apiKey) return res.status(500).json({ explanation: "Error: API Key is missing in Vercel." });
 
   try {
-    // Calling the 2026 stable model
+    // UPDATED for March 2026: Using the new Gemini 3 Flash model
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{
-          parts: [{ 
-            text: `Provide a strict 3-sentence summary of '${topic}' based on this verse: '${ayah}'. 
-            1. Define the concept briefly. 
-            2. Explain the message of this specific verse. 
-            3. Give one practical daily lesson. 
-            Do not use bold stars (**) or headers.` 
-          }]
+          parts: [{ text: `Provide a brief, educational summary of the concept of ${topic} in the Quran for a student project.` }]
         }]
       })
     });
 
     const data = await response.json();
 
-    // Error handling for API response
     if (data.error) {
-      return res.status(500).json({ explanation: `Google Error: ${data.error.message}` });
+        // This will tell you if your key is invalid or if the model is wrong
+        return res.status(500).json({ explanation: `Google Error: ${data.error.message}` });
     }
 
     if (data.candidates && data.candidates[0].content.parts[0].text) {
-      res.status(200).json({ explanation: data.candidates[0].content.parts[0].text });
+        res.status(200).json({ explanation: data.candidates[0].content.parts[0].text });
     } else {
-      res.status(200).json({ explanation: "No summary available for this verse." });
+        res.status(500).json({ explanation: "The AI did not return a response. Check your API settings." });
     }
   } catch (error) {
-    res.status(500).json({ explanation: "Connection error: " + error.message });
+    res.status(500).json({ explanation: "Connection Error: " + error.message });
   }
 }
