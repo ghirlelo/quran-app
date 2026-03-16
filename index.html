@@ -1,93 +1,101 @@
 <!DOCTYPE html>
 <html lang="ur">
 <head>
-    <meta charset="UTF-8">
-    <title>Quran AI Search</title>
-    <style>
-        body { font-family: sans-serif; background: #020617; color: white; text-align: center; padding: 20px; }
-        .search-box { margin-bottom: 30px; }
-        input { padding: 12px; width: 250px; border-radius: 5px; border: none; }
-        button { padding: 12px; border-radius: 5px; border: none; background: #2563eb; color: white; cursor: pointer; }
-        #results { max-width: 800px; margin: auto; text-align: right; }
-        .card { background: #0f172a; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1e293b; }
-        .arabic { font-size: 32px; margin-bottom: 15px; text-align: center; color: #f8fafc; direction: rtl; }
-        .urdu { font-size: 18px; color: #93c5fd; margin-bottom: 15px; direction: rtl; }
-        .aiBox { background: #064e3b; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; display: none; color: #dcfce7; }
-        .loader { border: 4px solid #333; border-top: 4px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <title>Quran AI Search</title>
+  <style>
+    body { font-family: "Segoe UI", Arial; background: #020617; color: white; text-align: center; padding: 40px; }
+    h1 { font-size: 32px; margin-bottom: 20px; }
+    input { padding: 14px; width: 320px; font-size: 16px; border-radius: 8px; border: none; }
+    button { padding: 14px 18px; font-size: 16px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; margin-left: 6px; }
+    button:hover { background: #1d4ed8; }
+    #results { margin-top: 40px; max-width: 900px; margin-left: auto; margin-right: auto; text-align: right; }
+    .card { background: #0f172a; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 0 12px rgba(0, 0, 0, 0.4); text-align: right; }
+    .info { color: #94a3b8; font-size: 14px; margin-bottom: 10px; text-align: left; }
+    .arabic { font-size: 36px; direction: rtl; line-height: 2; margin-bottom: 15px; color: #f8fafc; text-align: center; }
+    .urdu { font-size: 20px; direction: rtl; line-height: 1.8; color: #93c5fd; margin-bottom: 15px; border-top: 1px solid #1e293b; padding-top: 10px; }
+    .audio { margin-bottom: 10px; text-align: center; }
+    .aiBox { background: #052e16; padding: 12px; border-left: 4px solid #22c55e; border-radius: 6px; margin-top: 12px; font-size: 16px; line-height: 1.6; text-align: left; color: #dcfce7; }
+    .loader { border: 4px solid #333; border-top: 4px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
+  <h1>قرآن سرچ</h1>
+  <input id="topic" placeholder="مثلاً زکاة، روزہ، صبر">
+  <button onclick="searchTopic()">تلاش کریں</button>
 
-    <h1>قرآن اے آئی سرچ</h1>
+  <div id="results"></div>
 
-    <div class="search-box">
-        <input id="topic" placeholder="موضوع لکھیں...">
-        <button onclick="searchTopic()">تلاش کریں</button>
-    </div>
+  <script>
+    async function searchTopic() {
+      let topic = document.getElementById("topic").value;
+      let container = document.getElementById("results");
+      if (!topic) return;
+      container.innerHTML = '<div class="loader"></div>';
 
-    <div id="results"></div>
+      let url = `https://api.alquran.cloud/v1/search/${topic}/all/en`;
 
-    <script>
-        async function searchTopic() {
-            const topic = document.getElementById("topic").value;
-            const container = document.getElementById("results");
-            if (!topic) return;
+      try {
+        let res = await fetch(url);
+        let data = await res.json();
+        container.innerHTML = "";
 
-            container.innerHTML = '<div class="loader"></div>';
+        data.data.matches.slice(0, 5).forEach((ayah, index) => {
+          let card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="info">سورۃ ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})</div>
+            
+            <div class="arabic">${ayah.text}</div>
 
-            try {
-                const res = await fetch(`https://api.alquran.cloud/v1/search/${topic}/all/en.sahih`);
-                const data = await res.json();
+            <div class="urdu" id="urdu${index}">ترجمہ لوڈ ہو رہا ہے...</div>
 
-                container.innerHTML = "";
-                if (!data.data || data.data.matches.length === 0) {
-                    container.innerHTML = "کوئی نتیجہ نہیں ملا";
-                    return;
-                }
+            <div class="audio">
+              <audio controls src="https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3" style="width: 100%;"></audio>
+            </div>
 
-                data.data.matches.slice(0, 5).forEach((ayah, index) => {
-                    const card = document.createElement("div");
-                    card.className = "card";
-                    card.innerHTML = `
-                        <div style="text-align:left; font-size:12px; color:#64748b;">Surah ${ayah.surah.englishName} (${ayah.surah.number}:${ayah.numberInSurah})</div>
-                        <div class="arabic">${ayah.text}</div>
-                        <div class="urdu" id="urdu${index}">ترجمہ لوڈ ہو رہا ہے...</div>
-                        <button onclick="explain('${ayah.text.replace(/'/g, "\\'")}', ${index})" style="background:transparent; border:1px solid #3b82f6; color:#3b82f6; padding:5px 10px; cursor:pointer;">AI تشریح</button>
-                        <div class="aiBox" id="ai${index}"></div>
-                    `;
-                    container.appendChild(card);
-                    loadUrdu(ayah.number, index);
-                });
-            } catch (e) {
-                container.innerHTML = "Error loading data.";
-            }
-        }
+            <button onclick="explain('${topic}', ${index})">تشریح (AI Summary)</button>
 
-        async function loadUrdu(number, index) {
-            const res = await fetch(`https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`);
-            const data = await res.json();
-            document.getElementById("urdu" + index).innerText = data.data.text;
-        }
+            <div class="aiBox" id="ai${index}" style="display:none;"></div>
+          `;
+          container.appendChild(card);
+          loadUrdu(ayah.number, index);
+        });
+      } catch (err) {
+        container.innerHTML = "کچھ غلط ہو گیا، دوبارہ کوشش کریں۔";
+      }
+    }
 
-        async function explain(ayahText, index) {
-            const topic = document.getElementById("topic").value;
-            const box = document.getElementById("ai" + index);
-            box.style.display = "block";
-            box.innerHTML = "AI خلاصہ تیار کر رہا ہے...";
+    async function loadUrdu(number, index) {
+      let url = `https://api.alquran.cloud/v1/ayah/${number}/ur.jalandhry`;
+      try {
+        let res = await fetch(url);
+        let data = await res.json();
+        document.getElementById("urdu" + index).innerText = data.data.text;
+      } catch (err) {
+        document.getElementById("urdu" + index).innerText = "ترجمہ لوڈ نہیں ہو سکا۔";
+      }
+    }
 
-            try {
-                const res = await fetch("/api/explain", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ topic, ayah: ayahText })
-                });
-                const data = await res.json();
-                box.innerHTML = data.explanation.replace(/\*\*/g, "");
-            } catch (e) {
-                box.innerHTML = "Error getting explanation.";
-            }
-        }
-    </script>
+    async function explain(searchTopic, index) {
+      let box = document.getElementById("ai" + index);
+      box.style.display = "block";
+      box.innerHTML = "تشریح آ رہی ہے...";
+
+      try {
+        let res = await fetch("/api/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic: searchTopic }) // Correctly sending the word searched
+        });
+        let data = await res.json();
+        // Remove bold stars for a cleaner look
+        box.innerHTML = data.explanation.replace(/\*\*/g, ""); 
+      } catch (err) {
+        box.innerHTML = "تشریح حاصل نہیں ہو سکی۔";
+      }
+    }
+  </script>
 </body>
 </html>
